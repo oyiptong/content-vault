@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Content Vault: A secure runtime granting access to private data
+    </title>
+    <script src="https://www.w3.org/Tools/respec/respec-w3c-common" class=
+    "remove">
+    </script>
+    <script class='remove'>
+            var respecConfig = {
+                shortName: 'contentvault',
+                subtitle: 'Living Document',
+                editors: [{
+                    name: "Christian Huitema",
+                    company: "Microsoft Corporation",
+                    companyURL: "https://www.microsoft.com/",
+                }, {
+                    name: "Ben Livshits",
+                    company: "Microsoft Corporation",
+                    companyURL: "https://www.microsoft.com/",
+                }, {
+                    name: "Doug Turner",
+                    company: "Mozilla Corporation",
+                    companyURL: "https://mozilla.com.com",
+                }, {
+                    name: "Olivier Yiptong",
+                    company: "Mozilla Corporation",
+                    companyURL: "https://mozilla.org/",
+                }],
+                noLegacyStyle: true,
+                otherLinks: [{
+                    key: 'Repository',
+                    data: [{
+                        value: 'We are on Github.',
+                        href: 'https://github.com/oyiptong/contentvault'
+                    }, {
+                        value: 'File a bug.',
+                        href: 'https://github.com/oyiptong/contentvault/issues'
+                    }, {
+                        value: 'Commit history.',
+                        href: 'https://github.com/oyiptong/contentvault/commits/gh-pages'
+                    }, {
+                        value: 'Mailing list.',
+                        href: 'https://mail.mozilla.org/listinfo/dev-content-vault'
+                    }]
+                }],
+                issueBase: "https://www.github.com/oyiptong/contentvault/issues/",
+                githubAPI: "https://api.github.com/repos/oyiptong/contentvault"
+            };
+    </script>
+  </head>
+  <body>
+    <section id='abstract'>
+      <p>
+        Today's Internet user expects a great level of personalization.
+        Websites achieve this personalization by building a relationship with
+        that user, and sometimes through third parties. Those websites commonly
+        create a profile for that user, append new data with each interaction
+        and often enrich that corpus by buying additional data from brokers.
+      </p>
+      <p>
+        The act of personalization is not inherently wrong and is often
+        desired. User experiements show that personalization increases user
+        engagement and satisfaction in the long run. We, after all, expect our
+        computers to be useful devices and that involves a degree of
+        personalization. However, the cost is often at the expense of privacy
+        and/or security.
+      </p>
+      <p>
+        With the idea of a content vault, we may be able to achieve some level
+        of personalization while keeping the data within the control of the
+        user agent, thus preventing data leaks.
+      </p>
+    </section>
+    <section id="sotd">
+      <div class="warning">
+        <p>
+          Implementors need to be aware that this specification is not stable.
+          However, aspects of this specification are shipping in at least one
+          browser (see links to implementation status at the top of this
+          document). <strong>Implementors who are not taking part in the
+          discussions will find the specification changing out from under them
+          in incompatible ways.</strong> Vendors interested in implementing
+          this specification before it eventually reaches the Candidate
+          Recommendation phase should <a href=
+          "https://github.com/oyiptong/contentvault/issues">subscribe to the
+          repository on GitHub</a> and take part in the discussions.
+        </p>
+      </div>
+    </section>
+    <section class="informative">
+      <h2>
+        Content Vault
+      </h2>
+      <p>
+        This vault would:
+      </p>
+      <ul>
+        <li>not be accessible from the parent page (similar to x-domain
+        iframes)
+        </li>
+        <li>have limited capabilities (e.g. no network access)
+        </li>
+        <li>have access to privileged data stored in the UA
+        </li>
+        <li>do decisioning in UA without leaking externally
+        </li>
+        <li>expose an API only accessible inside a sandbox (e.g. declaratively
+        allow for certain lists of items to be re-ordered)
+        </li>
+      </ul>
+      <section class="informative">
+        <h3>
+          Privileged Data
+        </h3>
+        <p>
+          At this point, the data the CV has access to is not that relevant.
+          For illustration purposes, here are some examples of data that would
+          show the sensitive nature and utility of such data:
+        </p>
+        <ul>
+          <li>product purchase history
+          </li>
+          <li>content preferences (e.g. +ve or -ve signals for topics)
+          </li>
+          <li>absence or presence of signals gathered on the internet
+          </li>
+        </ul>This pieces of data could inform the rendering of the contents of
+        the CV, in a way that keeps the data within the UA. This data would not
+        be otherwise accessible.
+      </section>
+      <section class="informative">
+        <h3>
+          Vault Limitations
+        </h3>
+        <p>
+          The CV would have limited capabilities. For instance, certain API
+          endpoints will be closed off, e.g. XHR. The idea is to make it so
+          that the runtime for this content to be completely self-contained,
+          aside from the rendering to the user.
+        </p>
+        <p>
+          The vault would only be allowed to do transformations to the DOM
+          content and perhaps to modify state within the UA that is only
+          accessible via another vault.
+        </p>
+        <p>
+          Along the same vein as CSP, resources and capabilities for the CV
+          could be declared ahead of time.
+        </p>
+        <p>
+          To mitigate information leakage, for instance, resources could be
+          required to be declared in advance. Those resources would be loaded
+          and perhaps pre-rendered prior to being selected and drawn.
+        </p>
+      </section>
+      <section class="informative">
+        <h3>
+          Vault API
+        </h3>
+        <p>
+          To aid in personalizing content, an API will be made available within
+          the vault. This API will only be made available within the CV and may
+          declare certain domain permissions.
+        </p>
+        <p>
+          An example of a potential declarative API:
+        </p>
+        <pre>
+&lt;ul personalizable="true"&gt;
+    &lt;li topic="business"&gt;...&lt;/li&gt;
+    &lt;li topic="baseball"&gt;...&lt;/li&gt;
+    &lt;li topic="foobarwidget"&gt;...&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+        <p>
+          This could trigger the UA to re-order based on users' preferences,
+          most preferred on top, and blacklisted topics hidden. The goal of the
+          surrounding CV is to prevent nosy JavaScript from discerning the
+          user’s preferences from the DOM state.
+        </p>
+        <p>
+          JavaScript API’s could also be offered.
+        </p>
+      </section>
+    </section>
+    <section class="informative">
+      <h2>
+        Use Cases
+      </h2>
+      <section class="informative">
+        <h3>
+          Inline IFrame
+        </h3>
+        <p>
+          The CV could be used embedded in pages.
+        </p>
+      </section>
+      <section class="informative">
+        <h3>
+          Tiles
+        </h3>
+        <p>
+          It could be used to implement the idea of "Dynamic Tiles" in Firefox
+          (an idea coming from Doug Turner’s team). Those tiles would be
+          defined as page fragments and potentially scripts obtained from the
+          internet. They'd show up in the newtab page if a page frecent enough
+          is present.
+        </p>
+      </section>
+      <section class="informative">
+        <h3>
+          Mobile Applications
+        </h3>
+        <p>
+          From the perspective of the web as a platform, there needs to be
+          protection between applications potentially present in the same UI. A
+          direct application of this would be mobile apps containing other
+          mobile apps. For instance, an app could provide a way for a user to
+          manipulate a contact list without having access to all of it.
+        </p>
+      </section>
+    </section>
+    <section id="internationalization">
+      <h2>
+        Internationalization
+      </h2>
+      <div class="issue" data-number="323"></div>
+    </section>
+    <section id="issue-summary"></section>
+    <section class="appendix">
+      <h2>
+        Acknowledgments
+      </h2>
+      <p>
+        This document reuses text from the [[!HTML]] specification, edited by
+        Ian Hickson, as permitted by the license of that specification.
+      </p>
+    </section>
+  </body>
+</html>
